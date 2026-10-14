@@ -15,7 +15,16 @@ from ultralytics import YOLO
 # ============================================================
 
 APP_DIR = Path(__file__).resolve().parent
-MODEL_PATH = APP_DIR / "best.pt"
+MODEL_DIR = APP_DIR / "model"
+
+# Automatically look for best.pt first, then fallback to last.pt inside the 'model' directory
+if (MODEL_DIR / "best.pt").exists():
+    MODEL_PATH = MODEL_DIR / "best.pt"
+elif (MODEL_DIR / "last.pt").exists():
+    MODEL_PATH = MODEL_DIR / "last.pt"
+else:
+    # Default fallback path to trigger the error message cleanly if neither exists
+    MODEL_PATH = MODEL_DIR / "best.pt"
 
 st.set_page_config(
     page_title="ParkVision AI",
@@ -108,8 +117,8 @@ def load_model(model_path):
 
 if not MODEL_PATH.exists():
     st.error(
-        "👋 **Oops! We couldn't find your model file (`best.pt`).** "
-        "Please drop your trained weights into the same folder as `app.py` and refresh!"
+        f"👋 **Oops! We couldn't find your model file (`best.pt` or `last.pt`) inside the `model/` folder.** "
+        f"Please ensure a `model` directory exists next to `app.py` with your trained weights inside it!"
     )
     st.stop()
 
@@ -575,7 +584,7 @@ with tab_about:
         "ParkVision AI leverages computer vision and custom YOLO models to instantly "
         "detect empty and filled parking bays, giving you real-time insight into lot availability."
     )
-    st.markdown(f"**Active Model Checkpoint:** `{MODEL_PATH.name}`")
+    st.markdown(f"**Active Model Checkpoint:** `model/{MODEL_PATH.name}`")
     for cid, cname in CLASS_NAMES.items():
         st.markdown(f"- **Class {cid}**: `{cname}`")
 
